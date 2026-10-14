@@ -26,11 +26,14 @@ import {
   useTaskStateStoreServiceListTaskStateStore,
 } from "openapi/queries";
 import type { TaskStateStoreResponse } from "openapi/requests";
+
 import { DataTable } from "src/components/DataTable";
+import type { DataTableFeatures } from "src/components/DataTable/features";
 import { useTableURLState } from "src/components/DataTable/useTableUrlState";
 import { ErrorAlert } from "src/components/ErrorAlert";
 import { StoreValueCell } from "src/components/StoreValueCell";
 import Time from "src/components/Time";
+
 import { isStatePending, useAutoRefresh } from "src/utils";
 
 import { AddTaskStateStoreButton } from "./AddTaskStateStoreButton";
@@ -52,7 +55,7 @@ const getColumns = ({
   runId,
   taskId,
   translate,
-}: ColumnsProps): Array<ColumnDef<TaskStateStoreResponse>> => [
+}: ColumnsProps): Array<ColumnDef<DataTableFeatures, TaskStateStoreResponse>> => [
   {
     accessorKey: "key",
     cell: ({ row: { original } }) => <Text>{original.key}</Text>,
@@ -132,32 +135,33 @@ export const TaskStateStore = () => {
       taskId,
     },
     undefined,
-    { refetchInterval: isStatePending(taskInstance?.state) ? refetchInterval : false },
+    { refetchInterval: isStatePending(taskInstance?.state) && refetchInterval },
   );
 
   const columns = getColumns({ dagId, mapIndex, runId, taskId, translate });
 
   return (
     <>
-      <Flex gap={2} justifyContent="flex-end" mb={2}>
-        <AddTaskStateStoreButton dagId={dagId} mapIndex={mapIndex} runId={runId} taskId={taskId} />
-        {(data?.total_entries ?? 0) > 0 ? (
-          <ClearAllTaskStateStoreButton dagId={dagId} mapIndex={mapIndex} runId={runId} taskId={taskId} />
-        ) : undefined}
-      </Flex>
-
       <ErrorAlert error={error} />
       <DataTable
         columns={columns}
         data={data?.task_state_store ?? []}
         displayMode="table"
+        hideRowCountHeading
         initialState={tableURLState}
         isFetching={isFetching}
         isLoading={isLoading}
-        modelName="dag:taskStateStore.title"
+        modelName="dag:taskStateStore.entry"
         noRowsMessage={translate("taskStateStore.emptyStore")}
         onStateChange={setTableURLState}
-        showRowCountHeading={false}
+        primaryActions={
+          <>
+            {(data?.total_entries ?? 0) > 0 ? (
+              <ClearAllTaskStateStoreButton dagId={dagId} mapIndex={mapIndex} runId={runId} taskId={taskId} />
+            ) : undefined}
+            <AddTaskStateStoreButton dagId={dagId} mapIndex={mapIndex} runId={runId} taskId={taskId} />
+          </>
+        }
         total={data?.total_entries ?? 0}
       />
     </>
