@@ -76,7 +76,7 @@ apache-airflow-providers-apache-druid package
 `Apache Druid <https://druid.apache.org/>`__.
 
 
-Release: 4.5.2
+Release: 4.6.1
 
 Provider package
 ----------------
@@ -124,11 +124,28 @@ Dependent package                                                               
 `apache-airflow-providers-apache-hive <https://airflow.apache.org/docs/apache-airflow-providers-apache-hive>`_  ``apache.hive``
 ==============================================================================================================  ===============
 
+Optional dependencies
+---------------------
+
+These extras install optional third-party libraries that enable additional features of the provider.
+Install them when installing from PyPI. For example:
+
+.. code-block:: bash
+
+    pip install apache-airflow-providers-apache-druid[apache.hive]
+
+
+===============  ========================================
+Extra            Dependencies
+===============  ========================================
+``apache.hive``  ``apache-airflow-providers-apache-hive``
+===============  ========================================
+
 Downloading official packages
 -----------------------------
 
 You can download officially released packages and verify their checksums and signatures from the
 `Official Apache Download site <https://downloads.apache.org/airflow/providers/>`_
 
-* `The apache-airflow-providers-apache-druid 4.5.2 sdist package <https://downloads.apache.org/airflow/providers/apache_airflow_providers_apache_druid-4.5.2.tar.gz>`_ (`asc <https://downloads.apache.org/airflow/providers/apache_airflow_providers_apache_druid-4.5.2.tar.gz.asc>`__, `sha512 <https://downloads.apache.org/airflow/providers/apache_airflow_providers_apache_druid-4.5.2.tar.gz.sha512>`__)
-* `The apache-airflow-providers-apache-druid 4.5.2 wheel package <https://downloads.apache.org/airflow/providers/apache_airflow_providers_apache_druid-4.5.2-py3-none-any.whl>`_ (`asc <https://downloads.apache.org/airflow/providers/apache_airflow_providers_apache_druid-4.5.2-py3-none-any.whl.asc>`__, `sha512 <https://downloads.apache.org/airflow/providers/apache_airflow_providers_apache_druid-4.5.2-py3-none-any.whl.sha512>`__)
+* `The apache-airflow-providers-apache-druid 4.6.1 sdist package <https://downloads.apache.org/airflow/providers/apache_airflow_providers_apache_druid-4.6.1.tar.gz>`_ (`asc <https://downloads.apache.org/airflow/providers/apache_airflow_providers_apache_druid-4.6.1.tar.gz.asc>`__, `sha512 <https://downloads.apache.org/airflow/providers/apache_airflow_providers_apache_druid-4.6.1.tar.gz.sha512>`__)
+* `The apache-airflow-providers-apache-druid 4.6.1 wheel package <https://downloads.apache.org/airflow/providers/apache_airflow_providers_apache_druid-4.6.1-py3-none-any.whl>`_ (`asc <https://downloads.apache.org/airflow/providers/apache_airflow_providers_apache_druid-4.6.1-py3-none-any.whl.asc>`__, `sha512 <https://downloads.apache.org/airflow/providers/apache_airflow_providers_apache_druid-4.6.1-py3-none-any.whl.sha512>`__)

@@ -78,7 +78,7 @@ apache-airflow-providers-vertica package
 `Vertica <https://www.vertica.com/>`__
 
 
-Release: 4.4.0
+Release: 4.4.1
 
 Provider package
 ----------------
@@ -107,11 +107,28 @@ PIP package                                 Version required
 ``vertica-python``                          ``>=1.3.0``
 ==========================================  ==================
 
+Optional dependencies
+---------------------
+
+These extras install optional third-party libraries that enable additional features of the provider.
+Install them when installing from PyPI. For example:
+
+.. code-block:: bash
+
+    pip install apache-airflow-providers-vertica[sqlalchemy]
+
+
+==============  ==============================
+Extra           Dependencies
+==============  ==============================
+``sqlalchemy``  ``sqlalchemy>=1.4.54,!=2.1.0``
+==============  ==============================
+
 Downloading official packages
 -----------------------------
 
 You can download officially released packages and verify their checksums and signatures from the
 `Official Apache Download site <https://downloads.apache.org/airflow/providers/>`_
 
-* `The apache-airflow-providers-vertica 4.4.0 sdist package <https://downloads.apache.org/airflow/providers/apache_airflow_providers_vertica-4.4.0.tar.gz>`_ (`asc <https://downloads.apache.org/airflow/providers/apache_airflow_providers_vertica-4.4.0.tar.gz.asc>`__, `sha512 <https://downloads.apache.org/airflow/providers/apache_airflow_providers_vertica-4.4.0.tar.gz.sha512>`__)
-* `The apache-airflow-providers-vertica 4.4.0 wheel package <https://downloads.apache.org/airflow/providers/apache_airflow_providers_vertica-4.4.0-py3-none-any.whl>`_ (`asc <https://downloads.apache.org/airflow/providers/apache_airflow_providers_vertica-4.4.0-py3-none-any.whl.asc>`__, `sha512 <https://downloads.apache.org/airflow/providers/apache_airflow_providers_vertica-4.4.0-py3-none-any.whl.sha512>`__)
+* `The apache-airflow-providers-vertica 4.4.1 sdist package <https://downloads.apache.org/airflow/providers/apache_airflow_providers_vertica-4.4.1.tar.gz>`_ (`asc <https://downloads.apache.org/airflow/providers/apache_airflow_providers_vertica-4.4.1.tar.gz.asc>`__, `sha512 <https://downloads.apache.org/airflow/providers/apache_airflow_providers_vertica-4.4.1.tar.gz.sha512>`__)
+* `The apache-airflow-providers-vertica 4.4.1 wheel package <https://downloads.apache.org/airflow/providers/apache_airflow_providers_vertica-4.4.1-py3-none-any.whl>`_ (`asc <https://downloads.apache.org/airflow/providers/apache_airflow_providers_vertica-4.4.1-py3-none-any.whl.asc>`__, `sha512 <https://downloads.apache.org/airflow/providers/apache_airflow_providers_vertica-4.4.1-py3-none-any.whl.sha512>`__)

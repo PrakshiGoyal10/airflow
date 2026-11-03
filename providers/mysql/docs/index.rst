@@ -77,7 +77,7 @@ apache-airflow-providers-mysql package
 `MySQL <https://www.mysql.com/>`__
 
 
-Release: 6.6.1
+Release: 6.7.1
 
 Provider package
 ----------------
@@ -106,6 +106,7 @@ PIP package                                 Version required
 ``mysqlclient``                             ``>=2.2.5; sys_platform != "darwin"``
 ``mysql-connector-python``                  ``>=9.1.0; python_version < "3.12"``
 ``mysql-connector-python``                  ``>=9.1.0,!=9.7.0; python_version >= "3.12"``
+``asyncmy``                                 ``>=0.2.16``
 ``aiomysql``                                ``>=0.2.0``
 ``pymysql``                                 ``>=1.0.3,<1.2``
 ==========================================  =============================================
@@ -133,11 +134,34 @@ Dependent package                                                               
 `apache-airflow-providers-vertica <https://airflow.apache.org/docs/apache-airflow-providers-vertica>`_          ``vertica``
 ==============================================================================================================  ===============
 
+Optional dependencies
+---------------------
+
+These extras install optional third-party libraries that enable additional features of the provider.
+Install them when installing from PyPI. For example:
+
+.. code-block:: bash
+
+    pip install apache-airflow-providers-mysql[aiomysql]
+
+
+==========================  ========================================
+Extra                       Dependencies
+==========================  ========================================
+``aiomysql``                ``aiomysql>=0.2.0``
+``mysql-connector-python``
+``amazon``                  ``apache-airflow-providers-amazon``
+``openlineage``             ``apache-airflow-providers-openlineage``
+``presto``                  ``apache-airflow-providers-presto``
+``trino``                   ``apache-airflow-providers-trino``
+``vertica``                 ``apache-airflow-providers-vertica``
+==========================  ========================================
+
 Downloading official packages
 -----------------------------
 
 You can download officially released packages and verify their checksums and signatures from the
 `Official Apache Download site <https://downloads.apache.org/airflow/providers/>`_
 
-* `The apache-airflow-providers-mysql 6.6.1 sdist package <https://downloads.apache.org/airflow/providers/apache_airflow_providers_mysql-6.6.1.tar.gz>`_ (`asc <https://downloads.apache.org/airflow/providers/apache_airflow_providers_mysql-6.6.1.tar.gz.asc>`__, `sha512 <https://downloads.apache.org/airflow/providers/apache_airflow_providers_mysql-6.6.1.tar.gz.sha512>`__)
-* `The apache-airflow-providers-mysql 6.6.1 wheel package <https://downloads.apache.org/airflow/providers/apache_airflow_providers_mysql-6.6.1-py3-none-any.whl>`_ (`asc <https://downloads.apache.org/airflow/providers/apache_airflow_providers_mysql-6.6.1-py3-none-any.whl.asc>`__, `sha512 <https://downloads.apache.org/airflow/providers/apache_airflow_providers_mysql-6.6.1-py3-none-any.whl.sha512>`__)
+* `The apache-airflow-providers-mysql 6.7.1 sdist package <https://downloads.apache.org/airflow/providers/apache_airflow_providers_mysql-6.7.1.tar.gz>`_ (`asc <https://downloads.apache.org/airflow/providers/apache_airflow_providers_mysql-6.7.1.tar.gz.asc>`__, `sha512 <https://downloads.apache.org/airflow/providers/apache_airflow_providers_mysql-6.7.1.tar.gz.sha512>`__)
+* `The apache-airflow-providers-mysql 6.7.1 wheel package <https://downloads.apache.org/airflow/providers/apache_airflow_providers_mysql-6.7.1-py3-none-any.whl>`_ (`asc <https://downloads.apache.org/airflow/providers/apache_airflow_providers_mysql-6.7.1-py3-none-any.whl.asc>`__, `sha512 <https://downloads.apache.org/airflow/providers/apache_airflow_providers_mysql-6.7.1-py3-none-any.whl.sha512>`__)

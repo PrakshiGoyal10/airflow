@@ -86,14 +86,14 @@ def make_context(task_store: FakeTaskState | None = None) -> dict:
 
 
 class FakeTI:
-    """Minimal stand-in for RuntimeTaskInstance exposing stats_tags with an optional team_name."""
+    """Minimal stand-in for RuntimeTaskInstance exposing stats_tags."""
 
     def __init__(self, team_name: str | None = None):
         self._team_name = team_name
 
     @property
     def stats_tags(self) -> dict[str, str]:
-        tags = {"dag_id": "d", "task_id": "t"}
+        tags = {"dag_id": "d", "task_id": "t", "run_type": "scheduled"}
         if self._team_name:
             tags["team_name"] = self._team_name
         return tags
@@ -251,6 +251,8 @@ class TestExternalIdKey:
 class TestMetrics:
     _PATCH = "airflow.sdk._shared.observability.metrics.stats.incr"
     _TAG = {"operator": "ConcreteResumableOperator"}
+    _TI_TAGS = {"dag_id": "d", "task_id": "t", "run_type": "scheduled"}
+    _FULL_TAGS = {**_TI_TAGS, "team_name": "team_alpha", **_TAG}
 
     def test_fresh_submit_fires_only_fresh_submit_counter(self):
         op = ConcreteResumableOperator(task_id="test_task")
@@ -297,24 +299,49 @@ class TestMetrics:
         assert "resumable_job.fresh_submit" not in called_names
 
     @pytest.mark.parametrize(
-        ("team_name", "expected_tag"),
+        ("stored_status", "expected_names"),
         [
+            pytest.param(None, ["resumable_job.fresh_submit"], id="fresh_submit"),
             pytest.param(
-                "team_alpha",
-                {"operator": "ConcreteResumableOperator", "team_name": "team_alpha"},
-                id="with_team",
+                "RUNNING",
+                ["resumable_job.reconnect_attempt", "resumable_job.reconnect_success"],
+                id="reconnect",
             ),
-            pytest.param(None, {"operator": "ConcreteResumableOperator"}, id="without_team"),
+            pytest.param(
+                "SUCCEEDED",
+                ["resumable_job.reconnect_attempt", "resumable_job.already_succeeded"],
+                id="already_succeeded",
+            ),
+            pytest.param(
+                "FAILED",
+                ["resumable_job.reconnect_attempt", "resumable_job.terminal_resubmit"],
+                id="terminal_resubmit",
+            ),
         ],
     )
-    def test_team_name_added_to_metric_tags(self, team_name, expected_tag):
+    def test_every_counter_carries_task_instance_stats_tags(self, stored_status, expected_names):
         op = ConcreteResumableOperator(task_id="test_task")
-        ctx = make_context(FakeTaskState())
-        ctx["ti"] = FakeTI(team_name)
+        if stored_status is None:
+            task_state = FakeTaskState()
+        else:
+            op._status_map["job-001"] = stored_status
+            task_state = FakeTaskState({"test_job_id": "job-001"})
+        ctx = make_context(task_state)
+        ctx["ti"] = FakeTI("team_alpha")
         mock_incr = MagicMock()
         with patch(self._PATCH, mock_incr):
             op.execute_resumable(ctx)
-        mock_incr.assert_called_once_with("resumable_job.fresh_submit", tags=expected_tag)
+        assert [call.args[0] for call in mock_incr.call_args_list] == expected_names
+        assert all(call.kwargs["tags"] == self._FULL_TAGS for call in mock_incr.call_args_list)
+
+    def test_team_name_omitted_when_task_has_no_team(self):
+        op = ConcreteResumableOperator(task_id="test_task")
+        ctx = make_context(FakeTaskState())
+        ctx["ti"] = FakeTI()
+        mock_incr = MagicMock()
+        with patch(self._PATCH, mock_incr):
+            op.execute_resumable(ctx)
+        mock_incr.assert_called_once_with("resumable_job.fresh_submit", tags={**self._TI_TAGS, **self._TAG})
 
 
 class TestTracing:
@@ -402,3 +429,155 @@ class TestLogging:
         assert entry["external_id"] == "job-001"
         for key, val in extra_fields.items():
             assert entry[key] == val
+
+
+class _MissingSubmitJob(ResumableJobMixin, BaseOperator):
+    def get_job_status(self, external_id, context) -> str:
+        return "RUNNING"
+
+    def is_job_active(self, status: str) -> bool:
+        return True
+
+    def is_job_succeeded(self, status: str) -> bool:
+        return False
+
+    def poll_until_complete(self, external_id, context) -> None:
+        return None
+
+    def get_job_result(self, external_id, context):
+        return None
+
+
+class _MissingGetJobStatus(ResumableJobMixin, BaseOperator):
+    def submit_job(self, context):
+        return "id"
+
+    def is_job_active(self, status: str) -> bool:
+        return True
+
+    def is_job_succeeded(self, status: str) -> bool:
+        return False
+
+    def poll_until_complete(self, external_id, context) -> None:
+        return None
+
+    def get_job_result(self, external_id, context):
+        return None
+
+
+class _MissingIsJobActive(ResumableJobMixin, BaseOperator):
+    def submit_job(self, context):
+        return "id"
+
+    def get_job_status(self, external_id, context) -> str:
+        return "RUNNING"
+
+    def is_job_succeeded(self, status: str) -> bool:
+        return False
+
+    def poll_until_complete(self, external_id, context) -> None:
+        return None
+
+    def get_job_result(self, external_id, context):
+        return None
+
+
+class _MissingIsJobSucceeded(ResumableJobMixin, BaseOperator):
+    def submit_job(self, context):
+        return "id"
+
+    def get_job_status(self, external_id, context) -> str:
+        return "RUNNING"
+
+    def is_job_active(self, status: str) -> bool:
+        return True
+
+    def poll_until_complete(self, external_id, context) -> None:
+        return None
+
+    def get_job_result(self, external_id, context):
+        return None
+
+
+class _MissingPollUntilComplete(ResumableJobMixin, BaseOperator):
+    def submit_job(self, context):
+        return "id"
+
+    def get_job_status(self, external_id, context) -> str:
+        return "RUNNING"
+
+    def is_job_active(self, status: str) -> bool:
+        return True
+
+    def is_job_succeeded(self, status: str) -> bool:
+        return False
+
+    def get_job_result(self, external_id, context):
+        return None
+
+
+class _MissingGetJobResult(ResumableJobMixin, BaseOperator):
+    def submit_job(self, context):
+        return "id"
+
+    def get_job_status(self, external_id, context) -> str:
+        return "RUNNING"
+
+    def is_job_active(self, status: str) -> bool:
+        return True
+
+    def is_job_succeeded(self, status: str) -> bool:
+        return False
+
+    def poll_until_complete(self, external_id, context) -> None:
+        return None
+
+
+class _MissingEverything(ResumableJobMixin, BaseOperator):
+    pass
+
+
+class TestAbstractMethodEnforcement:
+    def test_mixin_itself_cannot_be_instantiated(self):
+        with pytest.raises(TypeError, match="Can't instantiate abstract class ResumableJobMixin"):
+            ResumableJobMixin()
+
+    def test_fully_implemented_subclass_has_no_abstract_methods(self):
+        assert ConcreteResumableOperator.__abstractmethods__ == frozenset()
+
+    def test_fully_implemented_subclass_instantiates_and_behaves_normally(self):
+        op = ConcreteResumableOperator(task_id="test_task")
+        assert isinstance(op, ResumableJobMixin)
+
+        op.execute_resumable(make_context(FakeTaskState()))
+        assert op.submitted_ids == ["job-001"]
+
+    def test_missing_all_methods_reports_every_one(self):
+        assert _MissingEverything.__abstractmethods__ == frozenset(
+            {
+                "submit_job",
+                "get_job_status",
+                "is_job_active",
+                "is_job_succeeded",
+                "poll_until_complete",
+                "get_job_result",
+            }
+        )
+        with pytest.raises(TypeError, match="Can't instantiate abstract class _MissingEverything"):
+            _MissingEverything(task_id="test_task")
+
+    @pytest.mark.parametrize(
+        ("partial_cls", "missing_method"),
+        [
+            pytest.param(_MissingSubmitJob, "submit_job", id="submit_job"),
+            pytest.param(_MissingGetJobStatus, "get_job_status", id="get_job_status"),
+            pytest.param(_MissingIsJobActive, "is_job_active", id="is_job_active"),
+            pytest.param(_MissingIsJobSucceeded, "is_job_succeeded", id="is_job_succeeded"),
+            pytest.param(_MissingPollUntilComplete, "poll_until_complete", id="poll_until_complete"),
+            pytest.param(_MissingGetJobResult, "get_job_result", id="get_job_result"),
+        ],
+    )
+    def test_missing_single_method_fails_at_construction(self, partial_cls, missing_method):
+        assert partial_cls.__abstractmethods__ == frozenset({missing_method})
+        with pytest.raises(TypeError):
+            partial_cls(task_id="test_task")
